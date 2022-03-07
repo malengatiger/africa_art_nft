@@ -33,15 +33,15 @@ console.log(`Application: 🌀🌀🌀 Moralis SERVER_URL: ${SERVER_URL}`);
 console.log(`Application: 🌀🌀🌀 isServerInfo: ${isServerInfo}`);
 
 ReactDOM.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <ThemeProvider theme={customTheme}>
       <MoralisProvider appId={APP_ID} serverUrl={SERVER_URL}>
         <MetaMaskProvider>
           <App />
         </MetaMaskProvider>
       </MoralisProvider>
-    </ThemeProvider>
-  </React.StrictMode>,
+    </ThemeProvider>,
+  // </React.StrictMode>,
   document.getElementById("root")
 );
 
