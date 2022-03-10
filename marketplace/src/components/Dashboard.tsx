@@ -14,12 +14,15 @@ import { useMoralis, useMoralisQuery, useMoralisWeb3Api } from "react-moralis";
 import { NativeBalance } from "web3uikit";
 import { StepNumberProps } from "web3uikit/dist/components/Stepper/types";
 import DashboardAppBar from "../components/DashboardAppBar";
+import Upload from "./Upload";
 
 const Dashboard = (props: IDashboardProps) => {
   console.log(`Dashboard starting with Moralis User`);
   console.log(props.user);
   const [balance, setBalance] = useState(0);
+  const [tokenBalance, setTokenBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
+  const [totalValue, setTotalValue] = useState(0);
   const { account } = useMoralis();
   //   const { data, error, isLoading } = useMoralisQuery(
   //     "Log",
@@ -34,9 +37,11 @@ const Dashboard = (props: IDashboardProps) => {
   }, []);
 
   const getData = async () => {
+    await Moralis.enableWeb3();
     await getEthBalance();
     await getTransactions();
-    console.log(`🐳 🐳 Dashboard: 👽👽👽👽 done getting DB data ...`);
+    await getEthTokenBalance();
+    console.log(`🐳 🐳 Dashboard: 👽👽👽👽 completed getting Moralis DB data ...`);
   };
   async function getEthBalance() {
     console.log(
@@ -61,6 +66,24 @@ const Dashboard = (props: IDashboardProps) => {
       setBalance(x.get("balance"));
     }
   }
+  async function getEthTokenBalance() {
+    console.log(
+      `🍎 Getting ethTokenBalance from Moralis : address: ${props.user.get(
+        "ethAddress"
+      )}`
+    );
+    const Bal = Moralis.Object.extend("EthTokenBalance");
+    const query = new Moralis.Query(Bal);
+    // query.equalTo("address", props.user.get("ethAddress"));
+    const results = await query.find();
+    console.log(
+      ` 🛎 🛎  🛎 EthTokenBalance Successfully retrieved: 🛎 ${results.length} balances 🛎 `
+    );
+    results.forEach(function (bal: any) {
+      console.log(bal);
+    });
+  }
+
   async function getTransactions() {
     console.log(
       `\n\n🍎 getTransactions: Get transactions from Moralis : ${props.user.get(
@@ -71,7 +94,6 @@ const Dashboard = (props: IDashboardProps) => {
     const mTransactions = await Moralis.Cloud.run("transactions", {
       from_address_string: props.user.get("ethAddress"),
     });
-    // const transactions = await Moralis.Cloud.run("transactions");
     setTransactions(mTransactions);
     console.log(mTransactions);
     console.log(
@@ -81,87 +103,107 @@ const Dashboard = (props: IDashboardProps) => {
 
     let totalValue: number = 0;
 
+    //calculate total value of transactions
     mTransactions.forEach(function (tran: any) {
-      //   console.log(
-      //     `ID: ${tran.id} FROM: ${tran.attributes.from_address} \nTO: ${tran.attributes.to_address} \nVALUE: ${tran.attributes.value}`
-      //   );
       const val: number = parseInt(tran.get("value"));
-
-      //   const eth = Moralis.Units.FromWei(tran.get('value'), 2) as unknown as number;
-      const m = val / 1000000000000000000;
-      console.log(m);
+      const m = val / divisor;
       totalValue += m;
     });
-
-    //const tokenValue = Moralis.Units.FromWei(totalValue, 2);
-    console.log(`🍀 🍀 🍀 Total Value of Transactions: 🍀 ${totalValue}`);
-    // for (const x in transactions) {
-    //     // console.log(`from_address: ${x.get("from_address")}`);
-    //     // console.log(`to_address: ${x.get("to_address")}`);
-    //     //console.log(x)
-    // }
+    setTotalValue(totalValue);
+    console.log(`🍀 🍀 🍀 Total Value of Transactions made: 🍀 ${totalValue}`);
   }
+  //temporary: divisor for wei to eth
+  const divisor = 1000000000000000000;
 
   return (
     <>
       <DashboardAppBar user={props.user} />
       <Box sx={{ margin: 4 }}>
-        <Typography sx={{ fontWeight: "bold" }}>Address</Typography>
-        <Typography> {props.user.attributes.ethAddress}</Typography>
+        <Typography sx={{ color: "grey" }}>Ethereum Address</Typography>
+        <Typography sx={{ fontWeight: "bold" }}>
+          {props.user.attributes.ethAddress}
+        </Typography>
       </Box>
-      <Grid container spacing={4} sx={{ margin: 8 }}>
-        <Grid item>
-          <Card sx={{ minWidth: 275 }}>
-            <CardContent>
-              <Typography
-                sx={{ fontSize: 24, fontWeight: "bold" }}
-                color="text.secondary"
-                gutterBottom
-              >
-                User Identification
-              </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.primary">
-                {props.user.id}
-              </Typography>
-              <Typography variant="h5" component="div">
-                Balance
-              </Typography>
-
-              <Typography
-                variant="h2"
-                sx={{ fontWeight: "bold", fontSize: 20 }}
-              >
-                {balance} ETH
-              </Typography>
-              <Box sx={{ marginTop: 4, flexDirection: "row" }}>
-                <Typography variant="h6" component="div">
-                  Transactions
-                </Typography>
-
+      <Box sx={{ bgcolor: "grey" }}>
+        <Grid container spacing={4} sx={{ margin: 8 }}>
+          <Grid item>
+            <Card sx={{ minWidth: 300, minHeight: 300 }}>
+              <CardContent>
                 <Typography
-                  variant="h2"
-                  sx={{ fontWeight: "bold", fontSize: 24, color: "red" }}
+                  sx={{ fontSize: 24, fontWeight: "bold" }}
+                  color="text.secondary"
+                  gutterBottom
                 >
-                  {transactions.length}
+                  User Identification
                 </Typography>
-              </Box>
-            </CardContent>
-            <CardActions>
-              <Button
-                variant="contained"
-                color="secondary"
-                size="medium"
-                onClick={getData}
-              >
-                Transactions
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
+                <Typography sx={{ mb: 1.5 }} color="text.primary">
+                  {props.user.id}
+                </Typography>
+                <Typography variant="h5" component="div">
+                  Balance
+                </Typography>
 
-        <Grid item>2</Grid>
-        <Grid item>3</Grid>
-      </Grid>
+                <Typography variant="h2" sx={{ fontWeight: "bold" }}>
+                  {(balance / divisor).toFixed(2)} ETH
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Box sx={{ marginBottom: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    size="small"
+                    onClick={getData}
+                  >
+                    Refresh Balance
+                  </Button>
+                </Box>
+              </CardActions>
+            </Card>
+          </Grid>
+
+          <Grid item>
+            <Card sx={{ minWidth: 300, minHeight: 300 }}>
+              <CardContent>
+                <Box>
+                  <Typography variant="h6" component="div">
+                    Total Transactions
+                  </Typography>
+
+                  <Typography
+                    variant="h2"
+                    sx={{ fontWeight: "bold", fontSize: 24, color: "red" }}
+                  >
+                    {transactions.length}
+                  </Typography>
+                </Box>
+                <Typography sx={{ marginTop: 2 }} variant="h6" component="div">
+                  Total Transaction Value
+                </Typography>
+                <Box sx={{ color: "blue", fontWeight: "bold" }}>
+                  <Typography variant="h4">
+                    {totalValue.toFixed(2)} ETH
+                  </Typography>
+                </Box>
+              </CardContent>
+              <CardActions>
+                <Box sx={{ marginBottom: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={getData}
+                  >
+                    Refresh Transactions
+                  </Button>
+                </Box>
+              </CardActions>
+            </Card>
+          </Grid>
+         
+        </Grid>
+      </Box>
+      <Upload />
     </>
   );
 };
