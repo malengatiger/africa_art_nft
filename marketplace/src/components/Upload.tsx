@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Moralis from "moralis";
 import ArtNFT from "../contracts/ArtNFT.json";
 import NFTMarket from "../contracts/NFTMarket.json";
-import { useWeb3ExecuteFunction } from "react-moralis";
+import { useWeb3ExecuteFunction, useApiContract } from "react-moralis";
 import {
   Button,
   TextField,
@@ -11,49 +11,138 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+import { BigNumber } from "ethers";
 
 const Upload = () => {
   const abi: any = ArtNFT.abi;
-
+  const [mTokenUri, setTokenUri] = useState<string>();
   // const { runContractFunction, data, error, isLoading, isFetching } =
   //   useApiContract({
-  //     functionName: "getCurrentTokenId",
-  //     address: "0x6C06b98f9a34862815c312AC7f3638d1C5618e07",
-  //     abi: abi,
-  //     params: {},
+  //     functionName: "createToken",
+  //     address: "0xB6BF18B4B601A7f92e1bcd785F942Ee82D137954",
+  //     abi: [
+  //       {
+  //         inputs: [
+  //           {
+  //             internalType: "string",
+  //             name: "tokenUri",
+  //             type: "string",
+  //           },
+  //         ],
+  //         name: "createToken",
+  //         outputs: [
+  //           {
+  //             internalType: "uint256",
+  //             name: "",
+  //             type: "uint256",
+  //           },
+  //         ],
+  //         stateMutability: "nonpayable",
+  //         type: "function",
+  //       },
+  //     ],
+  //     params: {'tokenUri': mTokenUri},
   //   });
-    const { data, error, fetch, isFetching, isLoading } =
-      useWeb3ExecuteFunction({
-        abi: abi,
-        contractAddress: "0x94D45f63f66F3a005CE2f25b457a5354F1a51CAF",
-        functionName: "getContractDate",
-        params: {},
-      });
+  
+  const { data, error, fetch, isFetching, isLoading } = useWeb3ExecuteFunction({
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: "string",
+            name: "tokenUri",
+            type: "string",
+          },
+        ],
+        name: "createToken",
+        outputs: [
+          {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+          },
+        ],
+        stateMutability: "nonpayable",
+        type: "function",
+      },
+    ],
+    contractAddress: "0xB6BF18B4B601A7f92e1bcd785F942Ee82D137954",
+    functionName: "createToken",
+    params: { tokenUri: mTokenUri },
+  });
+
+  async function mintTokenLegacy() {
+    console.log(
+      `\n\n\n🔵 🔵 🔵 🔵 🔵 mint NF Token Legacy : talk to the ArtNFT contract`
+    );
+    console.log(`tokenUri: ${mTokenUri}`)
+    let options = {
+      contractAddress: "",
+      functionName: "createToken",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "tokenUri",
+              type: "string",
+            },
+          ],
+          name: "createToken",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+      params: { 'tokenUri': mTokenUri },
+      msgValue: Moralis.Units.ETH(0.0),
+    };
+    console.log(`contract options: ${JSON.stringify(options)}`)
+    let result = await Moralis.executeFunction(options);
+    console.log(result);
+  }
 
   async function mintToken(_uri: any) {
-    console.log(`🔵 🔵 🔵 🔵 🔵 mint Token: talk to the ArtNFT contract`);
+    console.log(`🔵 🔵 🔵 🔵 🔵 mint NF Token: talk to the ArtNFT contract`);
     console.log(`🔆  🔆 tokenURI: ${_uri}`);
     const user = Moralis.User.current();
     console.log(user);
 
-    console.log(
-      `🔵 🔵 🔵 🔵 🔵 mint NFT Token: fetch with abi below`
-    );
+    console.log(`🔵 🔵 🔵 🔵 🔵 mint NFT Token: fetch with abi below ...`);
     console.log(abi);
-    
-    let result = await fetch().catch((e => {
-      console.log(`🔴 🔴 🔴 Error from fetch catch ...`);
-      console.log(e)
-    }));
+    console.log(`🌀🌀🌀 mTokenUri: ${mTokenUri}`);
+
+
+    let result: any = await fetch().catch((e) => {
+      console.log(`🔴 🔴 🔴 Error from fetch catch ....`);
+      console.log(e);
+    });
+    // let result = await runContractFunction()
     console.log(`🔵 🔵 🔵 🔵 🔵 result from contract call ...`);
-    console.log(result);
-    console.log(`🔴 🔴 🔴 🔴 error from contract call ...`);
-    console.log(error);
-    console.log(`🔵 🔵 🔵 🔵 🔵 data from contract call ...`);
-    console.log(data);
+    if (result) {
+      console.log(result);
+    } else {
+      console.log("🎈 Contract call returned 🎈 null | undefined 🎈");
+    }
+
+    if (error)
+    console.log(`🔴 🔴 🔴 🔴 error from contract call ... ${JSON.stringify(error)}`);
+    
+    if (data) {
+      console.log(`🔵 🔵 🔵 🔵 🔵 data from contract call ...`);
+      console.log(data);
+    }
   }
   //function_name: "mintToken"
   // address: "0x4cA68C56b5a53704913547D4691A1844c6f9f9f3",
+
+  //0x570e0f06c721d21513CbC817Cf8020f67deBE5EB
 
   const [name, setName] = useState<string>("");
   const [desc, setDesc] = useState<string>("");
@@ -83,7 +172,9 @@ const Upload = () => {
   };
 
   async function saveToIPFS() {
-    console.log(`🔵 🔵 🔵 🔵 🔵 .... saving to IPFS: ${selectedFile?.name()}`);
+    console.log(
+      `🔵 🔵 🔵 🔵 🔵 .... saving to IPFS, selectedFile: ${selectedFile?.name()}`
+    );
     if (selectedFile) {
       const ipfsFile = await selectedFile.saveIPFS();
       console.log(ipfsFile);
@@ -98,19 +189,19 @@ const Upload = () => {
           metadata
         )}`
       );
+      console.log('creating Moralis file ...')
       const metadataFile = new Moralis.File("metadata.json", {
         base64: Buffer.from(JSON.stringify(metadata), "base64").toString(),
       });
       console.log(metadataFile);
 
       let file: Moralis.File = await metadataFile.saveIPFS();
-      
+
       console.log(
-        `🚸 🚸 🚸 File saved to IPFS; 🚸 url: ${file.url()}`
+        `🚸 🚸 🚸 .. File saved to IPFS; 🚸 url: ${file.url()} ... setting state`
       );
       const metadataURI = file.url();
-
-      mintToken(metadataURI);
+      setTokenUri(metadataURI);
     }
   }
 
@@ -163,6 +254,15 @@ const Upload = () => {
         <Box sx={{ marginLeft: 2, marginBottom: 28 }}>
           <Button variant="contained" onClick={saveToIPFS}>
             Upload to IPFS
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              mintToken(mTokenUri);
+            }}
+          >
+            Mint Token
           </Button>
         </Box>
       </Paper>

@@ -11,8 +11,6 @@ import {
 import Moralis from "moralis";
 import { useState, useEffect } from "react";
 import { useMoralis, useMoralisQuery, useMoralisWeb3Api } from "react-moralis";
-import { NativeBalance } from "web3uikit";
-import { StepNumberProps } from "web3uikit/dist/components/Stepper/types";
 import DashboardAppBar from "../components/DashboardAppBar";
 import Upload from "./Upload";
 
@@ -24,6 +22,7 @@ const Dashboard = (props: IDashboardProps) => {
   const [transactions, setTransactions] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
   const { account } = useMoralis();
+
   //   const { data, error, isLoading } = useMoralisQuery(
   //     "Log",
   //     (query) => query.equalTo("owner", String(account)),
@@ -32,9 +31,9 @@ const Dashboard = (props: IDashboardProps) => {
   //   );
 
   useEffect(() => {
-    console.log(`\n🐳 🐳  Dashboard: 👽👽👽👽 useEffect starting...`);
+    console.log(`\n🐳 🐳  Dashboard: 👽👽👽👽 useEffect starting ...`);
     getData();
-  }, []);
+  }, [tokenBalance]);
 
   const getData = async () => {
     await Moralis.enableWeb3();
@@ -43,6 +42,9 @@ const Dashboard = (props: IDashboardProps) => {
     await getEthTokenBalance();
     console.log(`🐳 🐳 Dashboard: 👽👽👽👽 completed getting Moralis DB data ...`);
   };
+  const checkWallet = async () => {
+
+  }
   async function getEthBalance() {
     console.log(
       `🍎 Getting ethBalance from Moralis : address: ${props.user.get(
@@ -144,7 +146,7 @@ const Dashboard = (props: IDashboardProps) => {
                 </Typography>
 
                 <Typography variant="h2" sx={{ fontWeight: "bold" }}>
-                  {(balance / divisor).toFixed(2)} ETH
+                  {(balance / divisor).toFixed(4)} ETH
                 </Typography>
               </CardContent>
               <CardActions>

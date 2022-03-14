@@ -44,7 +44,7 @@ export default function LandingPage(props: ILandingPageProps) {
   checkWallet();
   async function checkWallet() {
     if (status === "initializing")
-      console.log("🌍 🌍 Synchronisation with MetaMask ongoing...");
+      console.log("🌍 🌍 🌍 🌍 Synchronisation with MetaMask ongoing...");
 
     if (status === "unavailable") {
       console.log("🌍 🌍 MetaMask not available...");
@@ -52,15 +52,15 @@ export default function LandingPage(props: ILandingPageProps) {
     }
 
     if (status === "notConnected") {
-      console.log("🌍 🌍 MetaMask not connected...");
+      console.log("🌍 🌍 🌍 🌍  MetaMask not connected...");
     }
 
     if (status === "connecting") {
-      console.log("🌍 🌍 MetaMask connecting...");
+      console.log("🌍 🌍 🌍 🌍  MetaMask connecting...");
     }
 
     if (status === "connected")
-      console.log("🌍 🌍 🌿 🌿 🌿 MetaMask is connected 🌍 🌍");
+      console.log("🌍 🌍 🌍 🌍  🌿 🌿 🌿 MetaMask is connected 🌍 🌍 🌍 🌍 ");
   }
 
   function print() {
@@ -78,6 +78,7 @@ export default function LandingPage(props: ILandingPageProps) {
     console.log(
       `\n🍎 LandingPage 👽👽👽👽 useEffect starting; doing nuthin so far`
     );
+    print()
   });
 
   async function onSignInClicked() {
@@ -129,7 +130,7 @@ export default function LandingPage(props: ILandingPageProps) {
 
   // let mUser: Moralis.User;
   if (isAuthenticated) {
-    console.log(` 🍐  🍐  🍐  🍐 already Authenticated`);
+    console.log(` 🍐  🍐  🍐  🍐 user already Authenticated`);
     const mUser = Moralis.User.current() as Moralis.User;
     console.log(mUser);
     console.log(`🍐  🍐  🍐  🍐 ethAddress: ${mUser.attributes.ethAddress}`);

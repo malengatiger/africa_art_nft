@@ -5,20 +5,23 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //prevents re-entrancy attacks
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "truffle/Console.sol";
+import "hardhat/console.sol";
 
 contract NFTMarket is ReentrancyGuard {
     using Counters for Counters.Counter;
     Counters.Counter private _itemIds; //total number of items ever created
     Counters.Counter private _itemsSold; //total number of items sold
 
-    address payable owner; //owner of the smart contract
+    address payable public owner; //owner of the smart contract
+    address public contractAddress; //owner of the smart contract
     //people have to pay to puy their NFT on this marketplace
-    uint256 listingPrice = 0.025 ether;
+    uint256 listingPrice = 0.00253 ether;
 
     constructor() {
         owner = payable(msg.sender);
-        Console.log("NFTMarket constructor, address of owner: " + owner);
+        contractAddress = address(this);
+        console.log("NFTMarket constructor: contract address: ");
+        console.log(contractAddress);
     }
 
     struct MarketItem {
@@ -67,7 +70,7 @@ contract NFTMarket is ReentrancyGuard {
     ) public payable nonReentrant {
         require(price > 0, "Price must be above zero");
         require(
-            msg.value == listingPrice,
+            price == listingPrice,
             "Price must be equal to listing price"
         );
 
@@ -84,8 +87,12 @@ contract NFTMarket is ReentrancyGuard {
             false
         );
 
+        MarketItem memory item = marketItems[itemId];
+
+        console.log("MarketItem built ...");
+
         //transfer ownership of the nft to the contract itself
-        IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+        // IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
         //log this transaction
         emit MarketItemCreated(
@@ -97,9 +104,12 @@ contract NFTMarket is ReentrancyGuard {
             price,
             false
         );
-        Console.log(
-            "Market Item created, itemId: " + itemId + " tokenId: " + tokenId
+        console.log(
+            "Market Item created"
         );
+    }
+    function getContractAddress() public view returns(address) {
+        return address(this);
     }
 
     /// @notice function to create a sale
@@ -128,7 +138,8 @@ contract NFTMarket is ReentrancyGuard {
         payable(owner).transfer(listingPrice); //pay owner of contract the listing price
 
         emit MarketItemSold(nftContract, itemId, price);
-        Console.log("Market Item sold, itemId: " + itemId + " price: " + price);
+        console.log("Market Item sold");
+        
     }
 
     /// @notice total number of items unsold on our platform

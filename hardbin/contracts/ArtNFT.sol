@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "truffle/Console.sol";
+import "hardhat/console.sol";
 
 /**
  * @title ArtNFT
@@ -24,7 +24,9 @@ contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
 
     constructor() ERC721("ArtNFT", "AAT") {
         constructorAddress = msg.sender;
-        Console.log("ArtNFT Contract constructor: " + constructorAddress);
+        console.log("ArtNFT Contract address: ");
+        address thisAddress = address(this);
+        console.log(thisAddress);
     }
 
     event ArtNFTMinted(uint256 tokenId, string tokenUri);
@@ -33,15 +35,17 @@ contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
     
     function createToken(string memory tokenUri) external onlyOwner returns (uint256) {
         
+       
         _tokenIds.increment();
         uint256 newNftTokenId = _tokenIds.current();
-        _mint(msg.sender, newNftTokenId);
+        _mint(constructorAddress, newNftTokenId);
         _setTokenURI(newNftTokenId, tokenUri);
         //grant transaction permission to marketplace
         setApprovalForAll(constructorAddress, true);
 
         emit ArtNFTMinted(newNftTokenId, tokenUri);
-        Console.log("Token created: " + newNftTokenId);
+        console.log("ArtNFT Token created");
+        console.log(newNftTokenId);
 
         return newNftTokenId;
     }
@@ -49,7 +53,8 @@ contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
     function getCurrentTokenId() public view returns(uint256){
         
         uint256 id =  _tokenIds.current();
-        Console.log("Current Token Id: " + newNftTokenId);
+        console.log("Current Token Id");
+        console.log(id);
         return id;
        
     }
@@ -71,7 +76,6 @@ contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
     
     function getContractDate() public view returns(uint) {
         uint time = block.timestamp;
-         Console.log("Block Timesatmp: " + time);
         return time;
     }
 }
