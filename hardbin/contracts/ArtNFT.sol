@@ -24,7 +24,7 @@ contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
 
     constructor() ERC721("ArtNFT", "AAT") {
         constructorAddress = msg.sender;
-        console.log("ArtNFT Contract address: ");
+        console.log("ArtNFT constructor: Contract address is: ");
         address thisAddress = address(this);
         console.log(thisAddress);
     }

@@ -20,7 +20,7 @@ contract NFTMarket is ReentrancyGuard {
     constructor() {
         owner = payable(msg.sender);
         contractAddress = address(this);
-        console.log("NFTMarket constructor: contract address: ");
+        console.log("NFTMarket constructor: contract address is: ");
         console.log(contractAddress);
     }
 
