@@ -14,8 +14,7 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import Dashboard from "./Dashboard";
-import axios from "axios";
-import publicIp from "public-ip";
+import Web3 from 'web3';
 export interface ILandingPageProps {}
 
 export default function LandingPage(props: ILandingPageProps) {
@@ -59,8 +58,33 @@ export default function LandingPage(props: ILandingPageProps) {
       console.log("🌍 🌍 🌍 🌍  MetaMask connecting...");
     }
 
-    if (status === "connected")
-      console.log("🌍 🌍 🌍 🌍  🌿 🌿 🌿 MetaMask is connected 🌍 🌍 🌍 🌍 ");
+    if (status === "connected") {
+      console.log("🌍 🌍 🌍 🌍 🌿 🌿 🌿 MetaMask is connected 🌍 🌍 🌍 🌍 ");
+      console.log(`🌍 🌍 🌍 🌍 chainId: ${chainId}`);
+    }
+
+    
+    //
+    try {
+      // Request account access
+      const web3 = new Web3(ethereum);
+      const accts = await web3.eth.getAccounts();
+      console.log(accts);
+      
+      let version = await Web3.version;
+      console.log(`Web3 version: ${version}`);
+     
+      console.log(web3);
+      console.log(web3.eth.accounts);
+      //
+       const bal = await web3.eth.getBalance(
+         "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+       );
+       console.log(`🍔 🍔 🍔 Balance: ${bal} 🍔 `);
+    } catch (e) {
+      console.log(e);
+    }
+   
   }
 
   function print() {

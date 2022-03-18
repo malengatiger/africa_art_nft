@@ -22,6 +22,8 @@ contract NFTMarket is ReentrancyGuard {
         contractAddress = address(this);
         console.log("NFTMarket constructor: contract address is: ");
         console.log(contractAddress);
+        console.log("NFTMarket constructor: Owner address is: ");
+        console.log(owner);
     }
 
     struct MarketItem {
@@ -89,10 +91,10 @@ contract NFTMarket is ReentrancyGuard {
 
         MarketItem memory item = marketItems[itemId];
 
-        console.log("MarketItem built ...");
+        console.log("NFTMarket: MarketItem built ...");
 
         //transfer ownership of the nft to the contract itself
-        // IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+        //IERC721(address(this)).transferFrom(msg.sender, address(this), tokenId);
 
         //log this transaction
         emit MarketItemCreated(
@@ -105,7 +107,7 @@ contract NFTMarket is ReentrancyGuard {
             false
         );
         console.log(
-            "Market Item created"
+            "NFTMarket: Market Item created"
         );
     }
     function getContractAddress() public view returns(address) {
@@ -138,7 +140,7 @@ contract NFTMarket is ReentrancyGuard {
         payable(owner).transfer(listingPrice); //pay owner of contract the listing price
 
         emit MarketItemSold(nftContract, itemId, price);
-        console.log("Market Item sold");
+        console.log("NFTMarket: Market Item sold");
         
     }
 
@@ -225,4 +227,10 @@ contract NFTMarket is ReentrancyGuard {
         uint256 time = block.timestamp;
         return time;
     }
+    //function approve(address to, uint256 tokenId) public virtual override {
+    // function approveMarketItem(address to, uint256 tokenId) public returns (bool) {
+
+    //     _approve(to, tokenId);
+    //     return true;
+    // }
 }

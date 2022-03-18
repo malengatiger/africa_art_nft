@@ -1,2 +1,11 @@
 npx hardhat node
+
+npx hardhat compile 
+npx hardhat test 
+
 npx hardhat run --network localhost scripts/deploy.js
+
+//Use Moralis admin CLI
+CLI API Key: n0umoOqXgBv7VPe
+CLI API Secret: Qnevmc8vaDdDQ2h
+moralis-admin-cli get-logs

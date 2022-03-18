@@ -15,7 +15,6 @@ import "hardhat/console.sol";
  * Based on https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.5.1/contracts/examples/SimpleToken.sol
  */
 
-
 contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -27,41 +26,51 @@ contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
         console.log("ArtNFT constructor: Contract address is: ");
         address thisAddress = address(this);
         console.log(thisAddress);
+
+        console.log("ArtNFT constructor: Sender address is: ");
+        console.log(constructorAddress);
     }
 
     event ArtNFTMinted(uint256 tokenId, string tokenUri);
+
     /// @notice create new token
     /// @param tokenUri uri of new token
-    
-    function createToken(string memory tokenUri) external onlyOwner returns (uint256) {
-        
-       
+
+    function mintToken(string memory tokenUri)
+        external
+        onlyOwner
+        returns (uint256)
+    {
         _tokenIds.increment();
         uint256 newNftTokenId = _tokenIds.current();
         _mint(constructorAddress, newNftTokenId);
         _setTokenURI(newNftTokenId, tokenUri);
-        //grant transaction permission to marketplace
-        setApprovalForAll(constructorAddress, true);
 
+        //grant transaction permission to marketplace
+        console.log("setApprovalForAll ... ");
+        setApprovalForAll(constructorAddress, true);
+        console.log("emit ArtNFTMinted event ... ");
         emit ArtNFTMinted(newNftTokenId, tokenUri);
-        console.log("ArtNFT Token created");
+        console.log("ArtNFT Token created OK");
         console.log(newNftTokenId);
 
         return newNftTokenId;
     }
 
-    function getCurrentTokenId() public view returns(uint256){
-        
-        uint256 id =  _tokenIds.current();
+
+    function getCurrentTokenId() public view returns (uint256) {
+        uint256 id = _tokenIds.current();
         console.log("Current Token Id");
         console.log(id);
         return id;
-       
     }
+
     // The following functions are overrides required by Solidity.
 
-    function _burn(uint256 tokenId) 
-        internal override(ERC721, ERC721URIStorage) {
+    function _burn(uint256 tokenId)
+        internal
+        override(ERC721, ERC721URIStorage)
+    {
         super._burn(tokenId);
     }
 
@@ -69,13 +78,13 @@ contract ArtNFT is ERC721, ERC721URIStorage, Ownable {
         public
         view
         override(ERC721, ERC721URIStorage)
-        returns (string memory)  {
-        
+        returns (string memory)
+    {
         return super.tokenURI(tokenId);
     }
-    
-    function getContractDate() public view returns(uint) {
-        uint time = block.timestamp;
+
+    function getContractDate() public view returns (uint256) {
+        uint256 time = block.timestamp;
         return time;
     }
 }

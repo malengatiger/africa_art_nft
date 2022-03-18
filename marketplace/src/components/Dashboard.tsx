@@ -13,6 +13,8 @@ import { useState, useEffect } from "react";
 import { useMoralis, useMoralisQuery, useMoralisWeb3Api } from "react-moralis";
 import DashboardAppBar from "../components/DashboardAppBar";
 import Upload from "./Upload";
+import Web3 from "web3";
+import { useMetaMask } from "metamask-react";
 
 const Dashboard = (props: IDashboardProps) => {
   console.log(`Dashboard starting with Moralis User`);
@@ -21,7 +23,15 @@ const Dashboard = (props: IDashboardProps) => {
   const [tokenBalance, setTokenBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
-  const { account } = useMoralis();
+  const { status, connect, chainId, ethereum } = useMetaMask();
+  const {
+    authenticate,
+    isAuthenticated,
+    isAuthenticating,
+    user,
+    account,
+    logout,
+  } = useMoralis();
 
   //   const { data, error, isLoading } = useMoralisQuery(
   //     "Log",
@@ -35,38 +45,90 @@ const Dashboard = (props: IDashboardProps) => {
     getData();
   }, [tokenBalance]);
 
+  const printMoralis = async () => {
+    console.log(`account: ${JSON.stringify(account)}`);
+    console.log(`isAuthenticated: ${isAuthenticated}`);
+  };
+
+  const doEthers = async () => {
+    console.log(`💀💀💀 Using ethers library ...;`);
+    const ethers = Moralis.web3Library;
+    // A Web3Provider wraps a standard Web3 provider, which is
+    // what MetaMask injects as window.ethereum into each page
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    console.log(`💀 Web3Provider ...`);
+    console.log(provider);
+    // MetaMask requires requesting permission to connect users accounts
+    await provider.send("eth_requestAccounts", []);
+
+    // The MetaMask plugin also allows signing transactions to
+    // send ether and pay to change state within the blockchain.
+    // For this, you need the account signer...
+    const signer = provider.getSigner();
+    console.log(`💀 Signer ...`);
+    console.log(signer);
+  };
+
   const getData = async () => {
     await Moralis.enableWeb3();
+    //await doEthers();
+    await printMoralis();
     await getEthBalance();
     await getTransactions();
     await getEthTokenBalance();
-    console.log(`🐳 🐳 Dashboard: 👽👽👽👽 completed getting Moralis DB data ...`);
+    console.log(
+      `🐳 🐳 Dashboard: 👽👽👽👽 completed getting Moralis Database  data ...`
+    );
   };
-  const checkWallet = async () => {
-
-  }
+  const checkWallet = async () => {};
   async function getEthBalance() {
-    console.log(
-      `🍎 Getting ethBalance from Moralis : address: ${props.user.get(
-        "ethAddress"
-      )}`
-    );
-    const Bal = Moralis.Object.extend("EthBalance");
-    const query = new Moralis.Query(Bal);
-    query.equalTo("address", props.user.get("ethAddress"));
-    const results = await query.find();
-    console.log(
-      ` 🛎 🛎  🛎 EthBalance Successfully retrieved: 🛎 ${results.length} balances 🛎 `
-    );
-    if (results.length === 1) {
-      let x = results[0];
-      console.log(
-        `🛎 🛎 🛎 🛎 ETHEREUM BALANCE: ${x.get("balance")} for account ${x.get(
-          "address"
-        )} 🛎 🛎`
+    try {
+      // Request account access
+      const m = new Web3(ethereum);
+      const accts = await m.eth.getAccounts();
+      console.log(accts);
+      // Get a (ethers.js) web3Provider
+      // const web3Provider = await Moralis.enableWeb3();
+      // const mBal = web3Provider.getBalance(
+      //   "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+      // );
+      // console.log(mBal);
+      let version = await Web3.version;
+      console.log(`Web3 version: ${version}`);
+
+      console.log(m);
+      console.log(m.eth.accounts);
+      //
+      const bal = await m.eth.getBalance(
+        "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
       );
-      setBalance(x.get("balance"));
+      const num: number = parseInt(bal);
+      setBalance(num);
+      console.log(`🍔 🍔 🍔 User Balance: ${bal} 🍔 `);
+    } catch (e) {
+      console.log(e);
     }
+    // console.log(
+    //   `🍎 Getting ethBalance from Moralis : address: ${props.user.get(
+    //     "ethAddress"
+    //   )}`
+    // );
+    // const Bal = Moralis.Object.extend("EthBalance");
+    // const query = new Moralis.Query(Bal);
+    // query.equalTo("address", props.user.get("ethAddress"));
+    // const results = await query.find();
+    // console.log(
+    //   ` 🛎 🛎  🛎 EthBalance Successfully retrieved: 🛎 ${results.length} balances 🛎 `
+    // );
+    // if (results.length === 1) {
+    //   let x = results[0];
+    //   console.log(
+    //     `🛎 🛎 🛎 🛎 ETHEREUM BALANCE: ${x.get("balance")} for account ${x.get(
+    //       "address"
+    //     )} 🛎 🛎`
+    //   );
+    //   setBalance(x.get("balance"));
+    // }
   }
   async function getEthTokenBalance() {
     console.log(
@@ -93,26 +155,32 @@ const Dashboard = (props: IDashboardProps) => {
       )}`
     );
 
-    const mTransactions = await Moralis.Cloud.run("transactions", {
-      from_address_string: props.user.get("ethAddress"),
-    });
-    setTransactions(mTransactions);
-    console.log(mTransactions);
-    console.log(
-      `🥦 🥦 🥦  readCloudFunctions: Get transactions:  from Moralis:  
+    try {
+      const mTransactions = await Moralis.Cloud.run("transactions", {
+        from_address_string: props.user.get("ethAddress"),
+      });
+      setTransactions(mTransactions);
+      console.log(mTransactions);
+      console.log(
+        `🥦 🥦 🥦  readCloudFunctions: Get transactions:  from Moralis:  
       🥬 ${mTransactions.length} transactions  🥬\n\n`
-    );
+      );
 
-    let totalValue: number = 0;
+      let totalValue: number = 0;
 
-    //calculate total value of transactions
-    mTransactions.forEach(function (tran: any) {
-      const val: number = parseInt(tran.get("value"));
-      const m = val / divisor;
-      totalValue += m;
-    });
-    setTotalValue(totalValue);
-    console.log(`🍀 🍀 🍀 Total Value of Transactions made: 🍀 ${totalValue}`);
+      //calculate total value of transactions
+      mTransactions.forEach(function (tran: any) {
+        const val: number = parseInt(tran.get("value"));
+        const m = val / divisor;
+        totalValue += m;
+      });
+      setTotalValue(totalValue);
+      console.log(
+        `🍀 🍀 🍀 Total Value of Transactions made is: 🍀 ${totalValue}`
+      );
+    } catch (e) {
+      console.log(` 😩 Cloud Function call: 😩  getRansactions FAILED ${e}`);
+    }
   }
   //temporary: divisor for wei to eth
   const divisor = 1000000000000000000;
@@ -202,7 +270,6 @@ const Dashboard = (props: IDashboardProps) => {
               </CardActions>
             </Card>
           </Grid>
-         
         </Grid>
       </Box>
       <Upload />
